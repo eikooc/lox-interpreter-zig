@@ -5,8 +5,6 @@ const Allocator = std.mem.Allocator;
 
 const Sizes = @import("./helper-types.zig");
 pub const Scanner = struct {
-    const Self = @This();
-
     allocator: Allocator,
     token_list: std.ArrayList(Token),
 
@@ -201,7 +199,7 @@ pub const Scanner = struct {
         try self.token_list.append(token);
     }
 
-    fn presentError(self: *Self, line: Sizes.MaxLines, message: []const u8) void {
+    fn presentError(self: *Scanner, line: Sizes.MaxLines, message: []const u8) void {
         report(line, "", message);
         self.hadError = true;
     }

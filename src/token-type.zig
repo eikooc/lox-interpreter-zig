@@ -48,13 +48,12 @@ pub const TokenType = enum {
 };
 
 pub const Token = struct {
-    const Self = @This();
     type: TokenType,
     lexeme: []const u8,
     literal: ?[]const u8,
     line: Sizes.MaxLines,
 
-    pub fn toString(self: Self, allocator: std.mem.Allocator) std.fmt.AllocPrintError![]u8 {
+    pub fn toString(self: Token, allocator: std.mem.Allocator) std.fmt.AllocPrintError![]u8 {
         return std.fmt.allocPrint(allocator, "{} {s} {?s}", .{ self.type, self.lexeme, self.literal });
     }
 };

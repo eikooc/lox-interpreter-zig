@@ -4,7 +4,6 @@ const Scanner = @import("./scanner.zig");
 const Allocator = std.mem.Allocator;
 
 pub const Lox = struct {
-    const Self = @This();
     hadError: bool = false,
 
     pub fn init() !void {
