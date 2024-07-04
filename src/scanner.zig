@@ -47,43 +47,30 @@ pub const Scanner = struct {
 
     pub fn scanToken(self: *Scanner) !void {
         const c = advance(self);
-        // Whitespace characters should be ignored
-        if (c == ' ' or c == '\r' or c == '\t') {} else if (c == '\n') {
-            self.line += 1;
-        }
-        // One character tokens
-        else if (c == '(') {
-            try addToken(self, tokens.TokenType.LEFT_PAREN, null);
-        } else if (c == ')') {
-            try addToken(self, tokens.TokenType.RIGHT_PAREN, null);
-        } else if (c == '{') {
-            try addToken(self, tokens.TokenType.LEFT_BRACE, null);
-        } else if (c == '}') {
-            try addToken(self, tokens.TokenType.RIGHT_BRACE, null);
-        } else if (c == ',') {
-            try addToken(self, tokens.TokenType.COMMA, null);
-        } else if (c == '.') {
-            try addToken(self, tokens.TokenType.DOT, null);
-        } else if (c == '-') {
-            try addToken(self, tokens.TokenType.MINUS, null);
-        } else if (c == '+') {
-            try addToken(self, tokens.TokenType.PLUS, null);
-        } else if (c == ';') {
-            try addToken(self, tokens.TokenType.SEMICOLON, null);
-        } else if (c == '*') {
-            try addToken(self, tokens.TokenType.STAR, null);
-        }
-        // Two-character tokens
-        else if (c == '!') {
-            try addToken(self, if (match(self, '=')) tokens.TokenType.BANG_EQUAL else tokens.TokenType.BANG, null);
-        } else if (c == '=') {
-            try addToken(self, if (match(self, '=')) tokens.TokenType.EQUAL_EQUAL else tokens.TokenType.EQUAL, null);
-        } else if (c == '<') {
-            try addToken(self, if (match(self, '=')) tokens.TokenType.LESS_EQUAL else tokens.TokenType.LESS, null);
-        } else if (c == '>') {
-            try addToken(self, if (match(self, '=')) tokens.TokenType.GREATER_EQUAL else tokens.TokenType.GREATER, null);
-        } else if (c == '/') {
-            if (match(self, '/')) {
+
+        switch (c) {
+            // Whitespace characters should be ignored
+            ' ' => {},
+            '\r' => {},
+            '\t' => {},
+            '\n' => self.line += 1,
+            // One character tokens
+            '(' => try addToken(self, tokens.TokenType.LEFT_PAREN, null),
+            ')' => try addToken(self, tokens.TokenType.RIGHT_PAREN, null),
+            '{' => try addToken(self, tokens.TokenType.LEFT_BRACE, null),
+            '}' => try addToken(self, tokens.TokenType.RIGHT_BRACE, null),
+            ',' => try addToken(self, tokens.TokenType.COMMA, null),
+            '.' => try addToken(self, tokens.TokenType.DOT, null),
+            '-' => try addToken(self, tokens.TokenType.MINUS, null),
+            '+' => try addToken(self, tokens.TokenType.PLUS, null),
+            ';' => try addToken(self, tokens.TokenType.SEMICOLON, null),
+            '*' => try addToken(self, tokens.TokenType.STAR, null),
+            // Two-character tokens
+            '!' => try addToken(self, if (match(self, '=')) tokens.TokenType.BANG_EQUAL else tokens.TokenType.BANG, null),
+            '=' => try addToken(self, if (match(self, '=')) tokens.TokenType.EQUAL_EQUAL else tokens.TokenType.EQUAL, null),
+            '<' => try addToken(self, if (match(self, '=')) tokens.TokenType.LESS_EQUAL else tokens.TokenType.LESS, null),
+            '>' => try addToken(self, if (match(self, '=')) tokens.TokenType.GREATER_EQUAL else tokens.TokenType.GREATER, null),
+            '/' => if (match(self, '/')) {
                 // A comment goes until the end of the line
                 while (peek(self) != '\n' and !self.isAtEnd()) {
                     _ = advance(self);
@@ -93,39 +80,31 @@ pub const Scanner = struct {
                 self.line += 1;
             } else {
                 try addToken(self, tokens.TokenType.SLASH, null);
-            }
-        }
-        // Literals
-        else if (c == '"') {
-            try string(self);
-        } else if (isDigit(c)) {
-            try number(self);
-        }
-        // Reserved keywords and identifiers
-        else if (isAlpha(c)) {
-            try identifier(self);
-        }
-        // When nothing matches, add to error map.
-        else {
-            const msg = try std.fmt.allocPrint(
-                self.allocator,
-                "Unexpected Character: {c}",
-                .{c},
-            );
-            try self.presentError(self.line, msg);
+            },
+            // Literals
+            '"' => try string(self),
+            // Reserved keywords and identifiers
+            '0'...'9' => try number(self),
+            'a'...'z' => try identifier(self),
+            'A'...'Z' => try identifier(self),
+            '_' => try identifier(self),
+            // When nothing matches, add to error map.
+            else => {
+                const msg = try std.fmt.allocPrint(
+                    self.allocator,
+                    "Unexpected Character: {c}",
+                    .{c},
+                );
+                try self.presentError(self.line, msg);
+            },
         }
 
         self.start = self.current;
     }
 
-    fn isAlpha(char: ?u8) bool {
-        if (char) |c| {
-            const is_lowercase_alpha = (c >= 'a' and c <= 'z');
-            const is_uppercase_alpha = (c >= 'A' and c <= 'Z');
-            const is_special_char = (c == '_');
-            return is_lowercase_alpha or is_uppercase_alpha or is_special_char;
-        }
-        return false;
+    fn isAlpha(char: u8) bool {
+        const is_special_char = (char == '_');
+        return std.ascii.isAlphabetic(char) or is_special_char;
     }
 
     fn isAlphaNumeric(c: u8) bool {
