@@ -12,7 +12,7 @@ pub const Lox = struct {
         defer std.process.argsFree(std.heap.page_allocator, args);
 
         if (args.len > 2) {
-            std.debug.print("Usage: lox [script]", .{});
+            std.log.err("Usage: lox [script]", .{});
             std.os.linux.exit(64);
         } else if (args.len == 2) {
             try runFile(args[1]);
@@ -48,6 +48,9 @@ fn run(source: []const u8) !void {
 
     const tokens = try scanner.scanTokens();
 
+    // For now we just print out the tokens to see things are working
+    // We should do something more interestin with them,
+    // when we have a parser.
     for (tokens.items) |token| {
         std.debug.print("Token: {s}\n", .{try token.toString(allocator)});
     }

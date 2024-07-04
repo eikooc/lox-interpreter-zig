@@ -208,7 +208,7 @@ pub const Scanner = struct {
 };
 
 fn report(line: Sizes.MaxLines, where: []const u8, message: []const u8) void {
-    std.debug.print("[line {!d}] Error {!s}: {!s}\n", .{ line, where, message });
+    std.log.err("[line {d}] Error {s}: {s}\n", .{ line, where, message });
 }
 
 const Keywords = enum {
