@@ -211,40 +211,47 @@ fn report(line: Sizes.MaxLines, where: []const u8, message: []const u8) !void {
     std.debug.print("[line {!d}] Error {!s}: {!s}\n", .{ line, where, message });
 }
 
+const Keywords = enum {
+    @"and",
+    class,
+    @"else",
+    false,
+    @"for",
+    fun,
+    @"if",
+    nil,
+    @"or",
+    print,
+    @"return",
+    super,
+    this,
+    true,
+    @"var",
+    @"while",
+};
+
 fn keywords(str: []const u8) tokens.TokenType {
-    if (std.mem.eql(u8, "and", str)) {
-        return tokens.TokenType.AND;
-    } else if (std.mem.eql(u8, "class", str)) {
-        return tokens.TokenType.CLASS;
-    } else if (std.mem.eql(u8, "else", str)) {
-        return tokens.TokenType.ELSE;
-    } else if (std.mem.eql(u8, "false", str)) {
-        return tokens.TokenType.FALSE;
-    } else if (std.mem.eql(u8, "for", str)) {
-        return tokens.TokenType.FOR;
-    } else if (std.mem.eql(u8, "fun", str)) {
-        return tokens.TokenType.FUN;
-    } else if (std.mem.eql(u8, "if", str)) {
-        return tokens.TokenType.IF;
-    } else if (std.mem.eql(u8, "nil", str)) {
-        return tokens.TokenType.NIL;
-    } else if (std.mem.eql(u8, "or", str)) {
-        return tokens.TokenType.OR;
-    } else if (std.mem.eql(u8, "print", str)) {
-        return tokens.TokenType.PRINT;
-    } else if (std.mem.eql(u8, "return", str)) {
-        return tokens.TokenType.RETURN;
-    } else if (std.mem.eql(u8, "super", str)) {
-        return tokens.TokenType.SUPER;
-    } else if (std.mem.eql(u8, "this", str)) {
-        return tokens.TokenType.THIS;
-    } else if (std.mem.eql(u8, "true", str)) {
-        return tokens.TokenType.TRUE;
-    } else if (std.mem.eql(u8, "var", str)) {
-        return tokens.TokenType.VAR;
-    } else if (std.mem.eql(u8, "while", str)) {
-        return tokens.TokenType.WHILE;
-    } else {
+    const enummed = std.meta.stringToEnum(Keywords, str);
+    if (enummed == null) {
         return tokens.TokenType.IDENTIFIER;
     }
+    const tokenType: tokens.TokenType = switch (enummed.?) {
+        .@"and" => tokens.TokenType.AND,
+        .class => tokens.TokenType.CLASS,
+        .@"else" => tokens.TokenType.ELSE,
+        .false => tokens.TokenType.FALSE,
+        .@"for" => tokens.TokenType.FOR,
+        .fun => tokens.TokenType.FUN,
+        .@"if" => tokens.TokenType.IF,
+        .nil => tokens.TokenType.NIL,
+        .@"or" => tokens.TokenType.OR,
+        .print => tokens.TokenType.PRINT,
+        .@"return" => tokens.TokenType.RETURN,
+        .super => tokens.TokenType.SUPER,
+        .this => tokens.TokenType.THIS,
+        .true => tokens.TokenType.TRUE,
+        .@"var" => tokens.TokenType.VAR,
+        .@"while" => tokens.TokenType.WHILE,
+    };
+    return tokenType;
 }
