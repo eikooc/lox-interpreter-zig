@@ -201,13 +201,13 @@ pub const Scanner = struct {
         try self.token_list.append(token);
     }
 
-    fn presentError(self: *Self, line: Sizes.MaxLines, message: []const u8) !void {
-        try report(line, "", message);
+    fn presentError(self: *Self, line: Sizes.MaxLines, message: []const u8) void {
+        report(line, "", message);
         self.hadError = true;
     }
 };
 
-fn report(line: Sizes.MaxLines, where: []const u8, message: []const u8) !void {
+fn report(line: Sizes.MaxLines, where: []const u8, message: []const u8) void {
     std.debug.print("[line {!d}] Error {!s}: {!s}\n", .{ line, where, message });
 }
 
