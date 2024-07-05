@@ -20,7 +20,7 @@ pub fn init(allocator: Allocator) !void {
 }
 
 fn readSourceFile(allocator: Allocator, path: []const u8) ![]const u8 {
-    const file_content = try std.fs.cwd().readFileAlloc(allocator, path, 512);
+    const file_content = try std.fs.cwd().readFileAlloc(allocator, path, std.math.maxInt(usize));
 
     return file_content;
 }
