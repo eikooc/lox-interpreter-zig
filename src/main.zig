@@ -1,5 +1,5 @@
 const std = @import("std");
-const lox = @import("./lox.zig");
+const Lox = @import("./Lox.zig");
 
 pub fn main() !void {
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
@@ -10,5 +10,5 @@ pub fn main() !void {
     }
 
     const allocator = gpa.allocator();
-    try lox.Lox.init(allocator);
+    try Lox.init(allocator);
 }

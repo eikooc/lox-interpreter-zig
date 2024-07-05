@@ -3,23 +3,21 @@ const Tokens = @import("./token-type.zig");
 const Scanner = @import("./scanner.zig");
 const Allocator = std.mem.Allocator;
 
-pub const Lox = struct {
-    hadError: bool = false,
+hadError: bool = false,
 
-    pub fn init(allocator: Allocator) !void {
-        const args = try std.process.argsAlloc(allocator);
-        defer std.process.argsFree(allocator, args);
+pub fn init(allocator: Allocator) !void {
+    const args = try std.process.argsAlloc(allocator);
+    defer std.process.argsFree(allocator, args);
 
-        if (args.len > 2) {
-            std.log.err("Usage: lox [script]", .{});
-            std.os.linux.exit(64);
-        } else if (args.len == 2) {
-            try runFile(allocator, args[1]);
-        } else {
-            try runPrompt(allocator);
-        }
+    if (args.len > 2) {
+        std.log.err("Usage: lox [script]", .{});
+        std.os.linux.exit(64);
+    } else if (args.len == 2) {
+        try runFile(allocator, args[1]);
+    } else {
+        try runPrompt(allocator);
     }
-};
+}
 
 fn readSourceFile(allocator: Allocator, path: []const u8) ![]const u8 {
     const file_content = try std.fs.cwd().readFileAlloc(allocator, path, 512);
