@@ -6,17 +6,17 @@ const Allocator = std.mem.Allocator;
 pub const Lox = struct {
     hadError: bool = false,
 
-    pub fn init() !void {
-        const args = try std.process.argsAlloc(std.heap.page_allocator);
-        defer std.process.argsFree(std.heap.page_allocator, args);
+    pub fn init(allocator: Allocator) !void {
+        const args = try std.process.argsAlloc(allocator);
+        defer std.process.argsFree(allocator, args);
 
         if (args.len > 2) {
             std.log.err("Usage: lox [script]", .{});
             std.os.linux.exit(64);
         } else if (args.len == 2) {
-            try runFile(args[1]);
+            try runFile(allocator, args[1]);
         } else {
-            try runPrompt();
+            try runPrompt(allocator);
         }
     }
 };
@@ -27,23 +27,20 @@ fn readSourceFile(allocator: Allocator, path: []const u8) ![]const u8 {
     return file_content;
 }
 
-fn runFile(path: []const u8) !void {
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const allocator = gpa.allocator();
+fn runFile(allocator: Allocator, path: []const u8) !void {
     const file_content = try readSourceFile(allocator, path);
     defer allocator.free(file_content);
 
-    try run(file_content);
+    try run(allocator, file_content);
 }
 
-fn run(source: []const u8) !void {
-    const allocator = std.heap.page_allocator;
-
+fn run(allocator: Allocator, source: []const u8) !void {
     var scanner = Scanner.Scanner{
         .source = source,
         .allocator = allocator,
         .token_list = std.ArrayList(Tokens.Token).init(allocator),
     };
+    defer scanner.token_list.deinit();
 
     const tokens = try scanner.scanTokens();
 
@@ -51,11 +48,14 @@ fn run(source: []const u8) !void {
     // We should do something more interestin with them,
     // when we have a parser.
     for (tokens.items) |token| {
-        std.debug.print("Token: {s}\n", .{try token.toString(allocator)});
+        const token_as_string = try token.toString(allocator);
+        defer allocator.free(token_as_string);
+
+        std.debug.print("Token: {s}\n", .{token_as_string});
     }
 }
 
-fn runPrompt() !void {
+fn runPrompt(allocator: Allocator) !void {
     const stdin = std.io.getStdIn().reader();
     const stdout = std.io.getStdOut().writer();
     var buf: [100]u8 = undefined;
@@ -65,7 +65,7 @@ fn runPrompt() !void {
 
         if (try stdin.readUntilDelimiterOrEof(buf[0..], '\n')) |user_input| {
             try stdout.print("{s}\n", .{user_input});
-            try run(user_input);
+            try run(allocator, user_input);
         } else {
             try stdout.print("Unexpected input\n", .{});
         }

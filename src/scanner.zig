@@ -93,7 +93,9 @@ pub const Scanner = struct {
                     "Unexpected Character: {c}",
                     .{c},
                 );
-                try self.presentError(self.line, msg);
+                defer self.allocator.free(msg);
+
+                self.presentError(self.line, msg);
             },
         }
 
@@ -153,7 +155,7 @@ pub const Scanner = struct {
         }
 
         if (isAtEnd(self)) {
-            try presentError(self, self.line, "Unterminated string");
+            presentError(self, self.line, "Unterminated string");
             return;
         }
 
