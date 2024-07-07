@@ -2,6 +2,7 @@ const std = @import("std");
 const Tokens = @import("./token-type.zig");
 const Scanner = @import("./scanner.zig");
 const Allocator = std.mem.Allocator;
+const lox_parser = @import("./parser.zig");
 
 hadError: bool = false,
 
@@ -51,6 +52,16 @@ fn run(allocator: Allocator, source: []const u8) !void {
 
         std.debug.print("Token: {s}\n", .{token_as_string});
     }
+
+    std.debug.print("About to parser init\n", .{});
+
+    var parser = lox_parser.Parser.init(tokens);
+    std.debug.print("About to parse\n", .{});
+    // _ = parser.parse();
+    const expression = parser.parse();
+    const ast = try lox_parser.astPrinter(allocator, expression);
+    defer allocator.free(ast);
+    std.debug.print("Token: {s}\n", .{ast});
 }
 
 fn runPrompt(allocator: Allocator) !void {

@@ -75,7 +75,7 @@ pub const Scanner = struct {
                 }
                 // This is not part of the book,
                 // but without it we get wrong line number reporting.
-                self.line += 1;
+                // self.line += 1;
             } else {
                 try addToken(self, tokens.TokenType.SLASH, null);
             },
@@ -130,18 +130,26 @@ pub const Scanner = struct {
     }
 
     fn number(self: *Scanner) !void {
+        std.debug.print("Start: {d}, current: {d}, source len: {}\n", .{ self.start, self.current, self.source.len });
+        std.debug.print("Entered NUMBER: {s}\n", .{self.source[self.start..self.current]});
+        std.debug.print("isDigit next?: {}\n", .{isDigit(peek(self))});
         while (isDigit(peek(self))) {
+            std.debug.print("Getting the whole number: {s}\n", .{self.source[self.start..self.current]});
             _ = advance(self);
         }
 
+        std.debug.print("is fraction?: {} {}\n", .{ peek(self) == '.', isDigit(peekNext(self)) });
         // Look for a fraction
         if (peek(self) == '.' and isDigit(peekNext(self))) {
+            std.debug.print("Fraction?: {s}\n", .{self.source[self.start..self.current]});
             _ = advance(self);
 
             while (isDigit(peek(self))) {
                 _ = advance(self);
             }
         }
+        // std.debug.print("About to add NUMBER: {}\n", .{self.token_list.items[self.current]});
+        // const int = try std.fmt.parseInt(u64, self.source[self.start..self.current]);
 
         try addToken(self, tokens.TokenType.NUMBER, self.source[self.start..self.current]);
     }
@@ -198,6 +206,7 @@ pub const Scanner = struct {
             .literal = literal,
             .line = self.line,
         };
+        std.debug.print("{}", .{token});
         try self.token_list.append(token);
     }
 
